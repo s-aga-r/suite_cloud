@@ -1,0 +1,36 @@
+{
+ "actions": [],
+ "creation": "2026-09-03 12:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "member_of"
+ ],
+ "fields": [
+  {
+   "columns": 10,
+   "fieldname": "member_of",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Group",
+   "options": "Mail Directory Account",
+   "reqd": 1,
+   "search_index": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-09-03 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Suite Cloud",
+ "name": "Mail Directory Group Member",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}
