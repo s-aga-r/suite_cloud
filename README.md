@@ -20,6 +20,7 @@ Suite talks to whichever servers you point it at.
 | Server Ansible Play, Server Ansible Play Task | Ansible playbook runs (install Docker, deploy Stalwart) tracked task by task |
 | Server Deployment | A Stalwart deployment: docker-compose services, env, bootstrap plan; runs the deploy playbook |
 | DNS Record | Records under the root domain, pushed to and verified against your DNS provider |
+| Mail Directory Account, Mail Directory Email, Mail Directory Group Member | Users and groups with their addresses, aliases and memberships; the tables Stalwart's SQL directory reads (see below) |
 | Suite Cloud Settings | Root domain, DNS provider credentials, Stalwart versions, job timeouts |
 
 Playbooks live in `suite_cloud/deploy/playbooks`, the Frappe Cloud helper scripts in `suite_cloud/deploy/fc`.
@@ -58,6 +59,47 @@ are set:
   }
 }
 ```
+
+## SQL directory
+
+Stalwart can authenticate users and resolve recipients straight from the site's database through
+its [SQL directory](https://stalw.art/docs/auth/backend/sql/). `Mail Directory Account` is the
+`accounts` table of that setup: the account's email is its login name, passwords are stored as a
+SHA-512 crypt hash (what `openssl passwd -6` produces) in the `secret` column, and the `enabled`
+flag plays the role of `active`. Its two child tables are the `emails` table (`Mail Directory
+Email`, with the primary address kept in sync and aliases such as `@example.org` for a catch-all)
+and the `group_members` table (`Mail Directory Group Member`, listing the groups an account belongs
+to). Groups are accounts of type `group`; they never get a secret.
+
+Point a Stalwart directory of type `Sql` at the site database with a MySQL store (a read-only
+database user with `SELECT` on the three tables is enough) and override the queries so they read
+Frappe's tables. MySQL and MariaDB take `?` placeholders; PostgreSQL takes `$1`.
+
+```json
+{
+  "@type": "Sql",
+  "description": "Suite Cloud directory",
+  "store": {
+    "@type": "MySql",
+    "host": "db.example.com",
+    "port": 3306,
+    "database": "site_db_name",
+    "authUsername": "stalwart",
+    "authSecret": { "@type": "Value", "secret": "..." }
+  },
+  "columnEmail": "name",
+  "columnSecret": "secret",
+  "columnDescription": "description",
+  "columnClass": "type",
+  "queryLogin": "SELECT `name`, `secret`, `description`, `type` FROM `tabMail Directory Account` WHERE `name` = ? AND `enabled` = 1",
+  "queryRecipient": "SELECT a.`name`, a.`secret`, a.`description`, a.`type` FROM `tabMail Directory Account` a JOIN `tabMail Directory Email` e ON e.`parent` = a.`name` WHERE e.`address` = ? AND a.`enabled` = 1 LIMIT 1",
+  "queryMemberOf": "SELECT `member_of` FROM `tabMail Directory Group Member` WHERE `parent` = ?",
+  "queryEmailAliases": "SELECT `address` FROM `tabMail Directory Email` WHERE `parent` = ? ORDER BY `type` DESC"
+}
+```
+
+The recipient query joins through the addresses table, so aliases and catch-alls resolve to their
+account; the aliases query lists the primary address first.
 
 ## Moving from Frappe Suite
 
