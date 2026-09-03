@@ -10,4 +10,19 @@ frappe.ui.form.on("Mail Directory Account", {
 			},
 		}));
 	},
+
+	refresh(frm) {
+		frm.trigger("add_actions");
+	},
+
+	add_actions(frm) {
+		if (frm.doc.__islocal || frm.doc.type !== "group") return;
+
+		// Membership lives in the members' child tables, so the list is filtered on that table.
+		frm.add_custom_button(__("Members"), () => {
+			frappe.set_route("List", "Mail Directory Account", {
+				"Mail Directory Group Member.member_of": frm.doc.name,
+			});
+		});
+	},
 });

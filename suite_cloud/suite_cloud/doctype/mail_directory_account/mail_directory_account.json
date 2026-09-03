@@ -124,15 +124,8 @@
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
- "links": [
-  {
-   "group": "Members",
-   "link_doctype": "Mail Directory Account",
-   "link_fieldname": "member_of",
-   "table_fieldname": "member_of"
-  }
- ],
- "modified": "2026-09-03 12:00:00.000000",
+ "links": [],
+ "modified": "2026-09-03 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "Suite Cloud",
  "name": "Mail Directory Account",
